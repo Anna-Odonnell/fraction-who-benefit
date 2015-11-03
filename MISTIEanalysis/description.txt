@@ -1,0 +1,5 @@
+The code in this folder corresponds to Section 5 of the paper, Web Figure 1, and Web Tables 1-3.
+
+mRS30.R, mRS180.R, and changeinVol.R correspond to the three outcomes, 30-day mRS score, 180-day mRS score, and RICV, respectively. In these files, the bound estimates are calculated and put in in LaTeX tables (Web Tables 1-3). I used the bound estimate calculations to later make Figures 3-5 in Microsoft Excel. 
+
+The Figure2a.R, Figure2b.R, and webFigure1.R files are the code for Figure 2 and Web Figure 1.

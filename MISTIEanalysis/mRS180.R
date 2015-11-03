@@ -1,23 +1,15 @@
-##IN THIS CODE:
-##create Figure 2b
-##estimate bounds for 180-day mRS score
-
-##inclusion criteria:
-##randomized, have 180-day mRS score, have NIHSS score
-##treatment and control patients from MISTIE II
-##control patients from ICES group
+##The analysis below includes treatment and control patients from MISTIE II, and control patients from ICES group.
+##Patients are included only if they had random treatment assignment, non-missing 180-day mRS score, 
+##and non-missing baseline NIHSS score
 
 ##########################################################################################################
-##Obtain YC, YT, YC1, YC2, YT1, YT2##
+##Gather the data for 180-day mRS score##
 ##########################################################################################################
-
 rm(list=ls())
 
-##Load the Rdata file with the MISTIE II dataset
-##It includes three data frames: baselineData, mRSData, and clotData
-##Each of these data frames has 96 people (42 medical, 54 surgical)
-##All inclusion criteria have been met except have 180-day mRS score
-##and have NIHSS score
+load("MISTIEIIdata.Rdata")
+##Each of these datasets (i.e., mRSData, clotData, baselineData) has 96 people (42 medical, 54 surgical)
+##All inclusion criteria have been met except non-missing 180-day mRS score and baseline NIHSS score
 
 ##We only need mRSData and baselineData right now
 rm(clotData)
@@ -45,7 +37,7 @@ data <- subset(data, !is.na(Enrollment_NIHSS_Total))
 nrow(data) ##95
 
 sum(is.na(data$rankin_score)) ##6 people missing rankin_score
-data$patientName[is.na(data$rankin_score)]
+data$patientName[is.na(data$rankin_score)] 
 data <- subset(data, !is.na(rankin_score)) 
 nrow(data) ##89
 
@@ -70,9 +62,10 @@ YT2 <- tmt2$rankin_score
 rm(control1, control2, tmt1, tmt2, treatment, control, data)
 
 
-##update scores to the scale in the paper
+##The scores are on a scale from 0 (no symptoms) to 6 (death)
+##Recode the scores to be Levels 1 - 7 (higher levels being better):
 ##Level 1 = 6; Level 2 = 5; Level 3 = 4; Level 4 = 3; Level 5 = 2; Level 6 = 1; Level 7 = 0
-levelfun <- function(x){ #code mRS as levels
+levelfun <- function(x){ 
   if(x == 0){
     y = 7
   } else if (x == 1){
@@ -98,45 +91,6 @@ YT1 <- sapply(YT1, levelfun)
 YC2 <- sapply(YC2, levelfun)
 YT2 <- sapply(YT2, levelfun)
 
-##########################################################################################################
-##Code for Figure 2b##
-##########################################################################################################
-
-FT <- rep(NA, 7)
-FC <- rep(NA, 7)
-FT1 <- rep(NA, 7)
-FC1 <- rep(NA, 7)
-FT2 <- rep(NA, 7)
-FC2 <- rep(NA, 7)
-
-for(i in 1:7){
-  FT[i] <- sum(YT <= i)/length(YT)
-  FT1[i] <- sum(YT1 <= i)/length(YT1)
-  FT2[i] <- sum(YT2 <= i)/length(YT2)
-  FC[i] <- sum(YC <= i)/length(YC)
-  FC1[i] <- sum(YC1 <= i)/length(YC1)
-  FC2[i] <- sum(YC2 <= i)/length(YC2)
-}
-
-
-pdf("Figure2b.pdf")
-par(mfcol=c(3,1))
-plot(1:7, FC, col = "blue", type = "s", xlim = c(1,7), ylim = c(0,1), xlab = "level", ylab = "", main = "Total population")
-par(new = TRUE)
-plot(1:7, FT, col = "red", type = "s", xlim = c(1,7), ylim = c(0,1), xlab = "", ylab = "")
-
-plot(1:7, FC1, col = "blue", type = "s", xlim = c(1,7), ylim = c(0,1), xlab = "level", ylab = "", main = "Subpopulation with non-severe stroke")
-par(new = TRUE)
-plot(1:7, FT1, col = "red", type = "s", xlim = c(1,7), ylim = c(0,1), xlab = "", ylab = "")
-
-plot(1:7, FC2, col = "blue", type = "s", xlim = c(1,7), ylim = c(0,1), xlab = "level", ylab = "", main = "Subpopulation with severe stroke")
-par(new = TRUE)
-plot(1:7, FT2, col = "red", type = "s", xlim = c(1,7), ylim = c(0,1), xlab = "", ylab = "")
-dev.off()
-
-##########################################################################################################
-##Calculate bound estimates##
-##########################################################################################################
 
 write.table(YC, file = "YC.txt", col.names = FALSE, row.names = FALSE)
 write.table(YT, file = "YT.txt", col.names = FALSE, row.names = FALSE)
@@ -145,9 +99,10 @@ write.table(YC2, file = "YC2.txt", col.names = FALSE, row.names = FALSE)
 write.table(YT1, file = "YT1.txt", col.names = FALSE, row.names = FALSE)
 write.table(YT2, file = "YT2.txt", col.names = FALSE, row.names = FALSE)
 
-##Open MATLAB and run the rest of this code in MATLAB. This code uses the bound
-##functions, which are also provided on the repository. Make sure your working directory
-##is the one in which you have saved these functions and "YC.txt", "YC1.txt", etc.
+##########################################################################################################
+##Compute the bound estimates (we use MATLAB for this step)##
+##########################################################################################################
+##In MATLAB
 
 
 YT = importdata('YT.txt');
@@ -158,33 +113,57 @@ YC1 = importdata('YC1.txt');
 YC2 = importdata('YC2.txt');
 
 
-[l,u,lflag,uflag] = boundsNoCov(YT,YC)
-[l,u,lflag,uflag] = boundsNoCov_resBen(YT, YC, 1)
-[l,u,lflag,uflag] = boundsNoCov_resBen(YT, YC, 2)
-[l,u,lflag,uflag] = boundsNoCov_resBen(YT, YC, 3)
-[l,u,lflag,uflag] = boundsNoCov_resBen(YT, YC, 4)
-[l,u,lflag,uflag] = boundsNoCov_resBen(YT, YC, 5)
+res1 = zeros(12,5);
+res2 = zeros(12,6);
 
-[l,u,lflag,uflag] = boundsNoCov_resHarm(YT, YC, 0)
-[l,u,lflag,uflag] = boundsNoCov_resHarm(YT, YC, 1)
-[l,u,lflag,uflag] = boundsNoCov_resHarm(YT, YC, 2)
-[l,u,lflag,uflag] = boundsNoCov_resHarm(YT, YC, 3)
-[l,u,lflag,uflag] = boundsNoCov_resHarm(YT, YC, 4)
-[l,u,lflag,uflag] = boundsNoCov_resHarm(YT, YC, 5)
+[~,~,l,u,eps] = boundsNoCov_res(YT, YC, 100, 100);
+res1(1,1:3)=[l,u,eps];
+[l, u, l1, u1, eps1, l2, u2, eps2] = boundsCov_res(YT1, YT2, YC1, YC2, 100, 100);
+res1(1,4:5)=[l,u];
+res2(1,:)=[l1,u1,eps1,l2,u2,eps2];
 
-[l, u, l1, u1, l2, u2, flag] = boundsCov(YT1, YC1, YT2, YC2)
-[l, u, l1, u1, l2, u2, flag] = boundsCov_resBen(YT1, YT2, YC1, YC2, 1, 1)
-[l, u, l1, u1, l2, u2, flag] = boundsCov_resBen(YT1, YT2, YC1, YC2, 2, 2)
-[l, u, l1, u1, l2, u2, flag] = boundsCov_resBen(YT1, YT2, YC1, YC2, 3, 3)
-[l, u, l1, u1, l2, u2, flag] = boundsCov_resBen(YT1, YT2, YC1, YC2, 4, 4)
-[l, u, l1, u1, l2, u2, flag] = boundsCov_resBen(YT1, YT2, YC1, YC2, 5, 5)
+for i = 0:5
+[~,~,l,u,eps] = boundsNoCov_res(YT, YC, 100, i);
+res1(end-i,1:3)=[l,u,eps];
+[l, u, l1, u1, eps1, l2, u2, eps2] = boundsCov_res(YT1, YT2, YC1, YC2, 100, i);
+res1(end-i,4:5)=[l,u];
+res2(end-i,:)=[l1,u1,eps1,l2,u2,eps2];
+end
 
-[l, u, l1, u1, l2, u2, flag] = boundsCov_resHarm(YT1, YT2, YC1, YC2, 0, 0)
-[l, u, l1, u1, l2, u2, flag] = boundsCov_resHarm(YT1, YT2, YC1, YC2, 1, 1)
-[l, u, l1, u1, l2, u2, flag] = boundsCov_resHarm(YT1, YT2, YC1, YC2, 2, 2)
-[l, u, l1, u1, l2, u2, flag] = boundsCov_resHarm(YT1, YT2, YC1, YC2, 3, 3)
-[l, u, l1, u1, l2, u2, flag] = boundsCov_resHarm(YT1, YT2, YC1, YC2, 4, 4)
-[l, u, l1, u1, l2, u2, flag] = boundsCov_resHarm(YT1, YT2, YC1, YC2, 5, 5)
+for i = 1:5
+[~,~,l,u,eps] = boundsNoCov_res(YT, YC, i, 100);
+res1(end-5-i,1:3)=[l,u,eps];
+[l, u, l1, u1, eps1, l2, u2, eps2] = boundsCov_res(YT1, YT2, YC1, YC2, i, 100);
+res1(end-5-i,4:5)=[l,u];
+res2(end-5-i,:)=[l1,u1,eps1,l2,u2,eps2];
+end
 
+save('res.mat', 'res1', 'res2')
 
+##########################################################################################################
+##Make LaTeX tables of the bound estimates (Web Table 2)##
+##########################################################################################################
+##back in R
+
+library(R.matlab)
+library(xtable)
+res <- readMat("res.mat")
+
+res.pop <- res[[1]]
+res.pop <- data.frame(res.pop)
+names(res.pop) <- c("l", "u", "epsilon", "l (using BV)", "u (using BV)")
+row.names(res.pop) <- c("No assumptions", "Benefit at most 5", "at most 4", "at most 3", "at most 2", "at most 1", 
+                        "Harm at most 5", " at most 4", " at most 3", " at most 2", " at most 1", "No Harm")
+tab <- xtable(res.pop, align = "rccccc")
+digits(tab) <- 2
+print(tab)
+
+res.subpop <- res[[2]]
+res.subpop <- data.frame(res.subpop)
+names(res.subpop) <- c("l", "u", "epsilon", "l", "u", "epsilon")
+row.names(res.subpop) <- c("No assumptions", "Benefit at most 5", "at most 4", "at most 3", "at most 2", "at most 1", 
+                           "Harm at most 5", " at most 4", " at most 3", " at most 2", " at most 1", "No Harm")
+tab <- xtable(res.subpop, align = "rcccccc")
+digits(tab) <- 2
+print(tab)
 

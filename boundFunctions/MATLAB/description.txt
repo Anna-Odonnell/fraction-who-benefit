@@ -1,0 +1,50 @@
+All of the code in this folder assumes an ordinal outcome, where the higher the outcome, the better.
+
+#############################################################################
+boundsNoCov_res estimates the lower and upper bounds on the fraction who benefit, without a baseline variable but allowing support restrictions applying to the entire population
+
+The inputs are as follows:
+##YT is the vector of outcomes for those assigned to treatment
+##YC is the vector of outcomes for those assigned to control
+##maxBen is the maximum possible benefit (i.e., YT - YC <= maxBen)
+##maxHarm is the maximum possible harm (i.e., YC - YT <= maxHarm)
+
+Note: if the user does not wish to make any support restrictions, set
+##maxBen and maxHarm as a number beyond the range of the ordinal scale 
+
+The outputs are as follows:
+##l is the lower bound estimate, and xl is the matrix that attains the lower bound estimate
+##u is the upper bound estimate, and xu is the matrix that attains the upper bound estimate
+##eps is the epsilon relaxation term
+
+
+#############################################################################
+
+
+
+#############################################################################
+##boundsCov_res estimates the lower and upper bounds on the fraction who benefit, with a baseline variable having two possible values (x1 and x2), and
+support restrictions applying to the entire population.
+
+The inputs are as follows:
+##YT1 is the vector of outcomes for those assigned to treatment and in Subpopulation 1
+##YC1 is the vector of outcomes for those assigned to control and in Subpopulation 1
+##YT2 is the vector of outcomes for those assigned to treatment and in Subpopulation 2
+##YC2 is the vector of outcomes for those assigned to control and in Subpopulation 2
+##maxBen is the maximum possible benefit (i.e., YT - YC <= maxBen)
+##maxHarm is the maximum possible harm (i.e., YC - YT <= maxHarm)
+
+Note: if the user does not wish to make any support restrictions, set
+##maxBen and maxHarm as a number beyond the range of the ordinal scale 
+
+The outputs are as follows:
+##l is the lower bound estimate
+##u is the upper bound estimate
+##11, u1, and eps1 are the lower bound estimate, upper bound estimate, and epsilon relaxation term for Subpopulation 1.
+##l2, u2, and eps2 are the lower bound estimate, upper bound estimate, and epsilon relaxation term for Subpopulation 2.
+#############################################################################
+
+############################################################################
+timing.m is for timing the boundsNoCov_res code when the ordinal outcome has 20 possible levels and the treatment and control groups each have 5000 subjects (the result is reported in the Introduction of the paper)
+############################################################################
+
