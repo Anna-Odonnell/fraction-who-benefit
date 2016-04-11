@@ -1,11 +1,11 @@
-##All code in boundFunctions.R assumes an ordinal outcome, where the higher the level, the better the outcome.
+##All code in boundFunctions.R assumes an ordinal outcome, where higher levels correspond to better outcomes.
 
 #############################################################################
-boundsNoCov_res estimates the lower and upper bounds on the fraction who benefit, without a baseline variable but allowing support restrictions applying to the entire population
+boundsNoCov_res estimates the lower and upper bounds that do not incorporate a baseline variable but may incorporate support restrictions applying to the entire population.
 
 The inputs are as follows:
-##YT is the vector of outcomes for those assigned to treatment
-##YC is the vector of outcomes for those assigned to control
+##YT is the vector of outcomes for those assigned to treatment (with NA’s removed)
+##YC is the vector of outcomes for those assigned to control (with NA’s removed)
 ##maxBen is the maximum possible benefit (i.e., YT - YC <= maxBen)
 ##maxHarm is the maximum possible harm (i.e., YC - YT <= maxHarm)
 
@@ -22,23 +22,22 @@ The outputs are as follows:
 
 
 #############################################################################
-##boundsCov_res estimates the lower and upper bounds on the fraction who benefit, with a baseline variable having two possible values (x1 and x2), and
-support restrictions applying to the entire population.
+##boundsCov_res estimates the lower and upper bounds that incorporate a baseline variable having two possible values (x1 and x2), and that may incorporate support restrictions applying to the entire population.
 
 The inputs are as follows:
-##YT1 is the vector of outcomes for those assigned to treatment and in Subpopulation 1
-##YC1 is the vector of outcomes for those assigned to control and in Subpopulation 1
-##YT2 is the vector of outcomes for those assigned to treatment and in Subpopulation 2
-##YC2 is the vector of outcomes for those assigned to control and in Subpopulation 2
+##YT1 is the vector of outcomes for those assigned to treatment and in Subpopulation 1 (with NA’s removed)
+##YC1 is the vector of outcomes for those assigned to control and in Subpopulation 1 (with NA’s removed)
+##YT2 is the vector of outcomes for those assigned to treatment and in Subpopulation 2 (with NA’s removed)
+##YC2 is the vector of outcomes for those assigned to control and in Subpopulation 2 (with NA’s removed)
 ##maxBen is the maximum possible benefit (i.e., YT - YC <= maxBen)
 ##maxHarm is the maximum possible harm (i.e., YC - YT <= maxHarm)
 
 Note: if the user does not wish to make any support restrictions, set
-##maxBen and maxHarm as a number beyond the range of the ordinal scale 
+maxBen and maxHarm as a number beyond the range of the ordinal scale 
 
 The outputs are as follows:
-##lb is the lower bound estimate
-##ub is the upper bound estimate
-##x1 is the vector including the lower bound estimate, upper bound estimate, and epsilon relaxation term for Subpopulation 1.
-##x2 is the vector including the lower bound estimate, upper bound estimate, and epsilon relaxation term for Subpopulation 2.
+##lb is the lower bound estimate for the population
+##ub is the upper bound estimate for the population
+##x1 is the vector including the lower bound estimate, upper bound estimate, and epsilon relaxation term for Subpopulation 1 (in that order).
+##x2 is the vector including the lower bound estimate, upper bound estimate, and epsilon relaxation term for Subpopulation 2 (in that order).
 #############################################################################

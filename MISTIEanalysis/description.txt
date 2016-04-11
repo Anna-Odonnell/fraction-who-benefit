@@ -1,5 +1,7 @@
-The code in this folder corresponds to Section 5 of the paper, Web Figure 1, and Web Tables 1-3.
+The code in this folder is for the MISTIE Application section.
 
-mRS30.R, mRS180.R, and changeinVol.R correspond to the three outcomes, 30-day mRS score, 180-day mRS score, and RICV, respectively. In these files, the bound estimates are calculated and put in in LaTeX tables (Web Tables 1-3). I used the bound estimate calculations to later make Figures 3-5 in Microsoft Excel. 
+mRS30.R and mRS180.R are for 30-day mRS score and 180-day mRS score, respectively. In these files, the bound estimates are computed and the marginal distributions (with and without stratifying by the baseline variable) are plotted. 
 
-The Figure2a.R, Figure2b.R, and webFigure1.R files are the code for Figure 2 and Web Figure 1.
+RICV_bounds.R and RICV_margDist.R are for reduction in clot volume (RICV). In RICV_bounds.R, we compute the bound estimates for RICV2, RICV5, RICV10, and RICV20. In RICV_margDist.R, we plot the marginal distributions (with and without stratifying by the baseline variable) for RICV2, RICV5, RICV10, and RICV20.
+
+In the Excel file, the bound estimates are plotted for the different outcomes.
