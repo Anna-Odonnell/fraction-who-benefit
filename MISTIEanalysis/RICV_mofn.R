@@ -1,0 +1,289 @@
+##8/2/16
+
+##Get the 95% CI for the lower bound (no restrictions, no baseline variable) 
+##and the 95% CI for the upper bound (no restrictions, no baseline variable)
+##using m-out-of-n bootstrap, when the outcome is RICV5
+
+library(boot)
+library(lpSolveAPI)
+
+rm(list=ls())
+##########################################################################################################
+##Functions##
+##########################################################################################################
+boundsNoCov_res <- function(ordinalScale, YT, YC, maxBen, maxHarm){
+  nT <- length(YT) #number of treatment subjects
+  nC <- length(YC) #number of control subjects
+  
+  if(nT == 0 | nC == 0){
+    #stop("WARNING: YT or YC is empty")
+    return(c(NA,NA,NA))
+  } else {
+    ordinalScale <- sort(ordinalScale, decreasing = FALSE)
+    L <- length(ordinalScale)
+    varCount <- L^2 #number of pi_{i,j}'s
+    
+    #The matrix of pi_{i,j}'s is a L x L matrix with varCount pi_{i,j}'s.
+    
+    scale <- nT * nC ##this can be made large to help with solving the linear program
+    
+    #############################################################################
+    ##Calculate marginal cdf's##
+    #############################################################################
+    cdf_C <- rep(0,L)
+    for (i in 1:L){
+      cdf_C[i] <- sum(YC <= ordinalScale[i])/nC
+    }
+    cdf_T <- rep(0,L)
+    for (i in 1:L){
+      cdf_T[i] <- sum(YT <= ordinalScale[i])/nT
+    }
+    
+    #############################################################################
+    ##Which pi_{i,j}'s are affected by the restrictions?##
+    #############################################################################
+    restrictions <- matrix(0,nrow=L,ncol=L)
+    for (i in 1:L){
+      for (j in 1:L){
+        if (ordinalScale[j]-ordinalScale[i]>maxBen | ordinalScale[i]-ordinalScale[j]>maxHarm){
+          restrictions[i,j] <- 1
+        }
+      }
+    }
+    restrictions <- c(restrictions)
+    #############################################################################
+    ##LP for epsilon##
+    #############################################################################
+    lprec <- make.lp(0,(varCount+1))
+    
+    ##Setting objective function
+    objfn <- c(rep(0,varCount),1)
+    set.objfn(lprec,objfn)
+    
+    ##Setting non-negativity bounds
+    set.bounds(lprec, lower = rep(0, (varCount+1)), upper = NULL)
+    
+    ##pi_{i,j}'s sum to 1
+    add.constraint(lprec, xt = c(rep(1,varCount),0), "=", rhs = scale)
+    
+    ##incorporating the restrictions
+    add.constraint(lprec, xt = c(restrictions,0), "=", rhs = 0)
+    
+    ##marginal cdf constraints
+    pij.matrix <- matrix(1:varCount, nrow = L, ncol = L)
+    
+    for (i in 1:(L-1)){
+      add.constraint(lprec, xt = c(rep(1,L*i),-1), "<=", rhs = (cdf_C[i]*scale), indices = c(pij.matrix[1:i,],(varCount+1))) 
+      add.constraint(lprec, xt = rep(1,L*i+1), ">=", rhs = (cdf_C[i]*scale), indices = c(pij.matrix[1:i,],(varCount+1)))
+    }
+    
+    for (i in 1:(L-1)){
+      add.constraint(lprec, xt = c(rep(1,L*i),-1), "<=", rhs = (cdf_T[i]*scale), indices = c(pij.matrix[,1:i],(varCount+1))) 
+      add.constraint(lprec, xt = rep(1,L*i+1), ">=", rhs = (cdf_T[i]*scale), indices = c(pij.matrix[,1:i],(varCount+1)))
+    }
+    
+    ##Solving linear program
+    eps.flag <- solve(lprec)
+    
+    if(eps.flag != 0){
+      stop("WARNING: problem with LP for eps")
+    }
+    
+    eps <- get.objective(lprec)/scale
+    
+    if (eps < 10 ^ (-10)){
+      eps <- 0
+    }
+    
+    rm(lprec)
+    
+    #############################################################################
+    ##LP for lb and ub##
+    #############################################################################
+    
+    lprec <- make.lp(0,varCount)
+    
+    ##Setting objective function
+    objfn <- matrix(0, L, L)
+    for (i in 1:L){
+      for (j in 1:L){
+        if (ordinalScale[j]>ordinalScale[i]){ 
+          objfn[i,j] <- 1
+        }
+      }
+    }
+    objfn <- c(objfn)
+    set.objfn(lprec,objfn)
+    
+    ##Setting non-negativity bounds 
+    set.bounds(lprec, lower = rep(0, varCount), upper = NULL) 
+    
+    ##pi_{i,j}'s sum to 1
+    add.constraint(lprec, xt = rep(1,varCount), "=", rhs = scale)
+    
+    ##incorporating the restrictions
+    add.constraint(lprec, xt = restrictions, "=", rhs = 0)
+    
+    ##marginal cdf constraints
+    for (i in 1:(L-1)){
+      add.constraint(lprec, xt = rep(1,L*i), "<=", rhs = (cdf_C[i]+eps)*scale, indices = c(pij.matrix[1:i,])) 
+      add.constraint(lprec, xt = rep(1,L*i), ">=", rhs = (cdf_C[i]-eps)*scale, indices = c(pij.matrix[1:i,]))
+    }
+    
+    for (i in 1:(L-1)){
+      add.constraint(lprec, xt = rep(1,L*i), "<=", rhs = (cdf_T[i]+eps)*scale, indices = c(pij.matrix[,1:i])) 
+      add.constraint(lprec, xt = rep(1,L*i), ">=", rhs = (cdf_T[i]-eps)*scale, indices = c(pij.matrix[,1:i]))
+    }
+    
+    lb.flag <- solve(lprec)
+    
+    if(lb.flag != 0){
+      stop("WARNING: problem with LP for lb")
+    }
+    
+    lb <- get.objective(lprec)/scale
+    
+    lp.control(lprec,sense='max')
+    
+    ub.flag <- solve(lprec)
+    
+    if(ub.flag != 0){
+      stop("WARNING: problem with LP for ub")
+    }
+    
+    ub <- get.objective(lprec)/scale
+    
+    return(c(lb,ub,eps))
+  }
+}
+
+
+compute_estimators_on_bootstrap_replicate_of_dataset <- function(data,index,maxBen,maxHarm,subsampleSize){
+  replicate_data_set <- data[sample(1:nrow(data),size=subsampleSize,replace=TRUE),]
+  YC <- replicate_data_set[replicate_data_set$trt==0,]$y
+  YT <- replicate_data_set[replicate_data_set$trt==1,]$y
+  res <- boundsNoCov_res(ordinalScale, YT, YC, maxBen, maxHarm)
+  return(res[1:2])
+}
+
+#############################################################################
+##Get the dataset for RICV5##
+#############################################################################
+
+setwd("~/Dropbox/research/data/MISTIEII")
+
+load("MISTIEIIdata.Rdata")
+##Each of these datasets (i.e., mRSData, clotData, baselineData) has 96 people (42 medical, 54 surgical)
+##The people in these datasets meet all inclusion criteria, except having non-missing reduction in clot volume 
+##and baseline clot volume
+
+##We can ignore mrsData
+rm(mrsData)
+
+##Merge baselineData and clotData
+data <- merge(baselineData, clotData, by = "patientName")
+
+rm(baselineData, clotData)
+
+##Check that merge was successful
+all(data$Group_Assigned == data$group_assigned) ##true
+
+##Everyone has baseline and EOT reduction in clot volume
+sum(is.na(data$Pre_Rand_ICH_Volume_RC)) ##0
+sum(is.na(data$eot_ich_9_13)) ##0
+
+##Calculate reduction in clot volume
+data$volchange <- data$Pre_Rand_ICH_Volume_RC - data$eot_ich_9_13
+
+##Focus on the variables of interest
+data <- data.frame(data$patientName, data$Group_Assigned, data$volchange, data$Pre_Rand_ICH_Volume_RC)
+names(data) <- c("id", "group", "volChange", "baseVol")
+
+control <- subset(data, group == "Medical") ##n = 42
+tmt <- subset(data, group == "Surgical") ##n = 54
+
+YT <- tmt$volChange
+YC <- control$volChange
+
+##Function for converting RICV to RICV5
+levelfun <- function(x){ 
+  if(x < 0){
+    y = 1
+  } else if(x >= 0 & x < 5){
+    y = 2
+  } else if(x >= 5 & x < 10){
+    y = 3
+  } else if(x >= 10 & x < 15){
+    y = 4
+  } else if(x >= 15 & x < 20){
+    y = 5
+  } else {
+    y = 6
+  } 
+  return(y)
+}
+
+YC <- sapply(YC, levelfun)
+YT <- sapply(YT, levelfun)
+
+datasamp <- data.frame(trt = c(rep(1, length(YT)),rep(0, length(YC))), y = c(YT, YC))
+rm(YC,YT, control, tmt, data)
+#############################################################################
+##Inputs##
+#############################################################################
+ordinalScale <- 1:6
+maxBen <- 100
+maxHarm <- 100
+bootrep <- 5000
+N <- nrow(datasamp)
+q <- 0.95
+k <- 500 
+
+#############################################################################
+##Get the m-out-of-n CI's for the lower and upper bounds##
+#############################################################################
+
+set.seed(2270089)
+m.candidates <- unique(ceiling(N * q^(0:k)))
+m.candidates <- m.candidates[m.candidates>=20]
+numCandidates <- length(m.candidates)
+
+matLB <- matrix(NA, nrow = numCandidates, ncol = bootrep) 
+matUB <- matrix(NA, nrow = numCandidates, ncol = bootrep)
+  
+for (l in 1:numCandidates){
+  boot.obj <- boot(data = datasamp, statistic= compute_estimators_on_bootstrap_replicate_of_dataset, R=bootrep, maxBen = maxBen, maxHarm = maxHarm, subsampleSize = m.candidates[l])
+  matLB[l,] <- t(sort(boot.obj$t[,1], na.last = TRUE))
+  matUB[l,] <- t(sort(boot.obj$t[,2], na.last = TRUE))
+}
+  
+matLB <- cbind(m.candidates, matLB)
+matLB <- matLB[complete.cases(matLB),] ##get rid of candidate m's with any NA's (m was too small, nT or nC = 0) 
+m.candidatesLB <- matLB[,1]
+matLB <- matLB[,-1]
+  
+matUB <- cbind(m.candidates, matUB)
+matUB <- matUB[complete.cases(matUB),] 
+m.candidatesUB <- matUB[,1]
+matUB <- matUB[,-1]
+  
+temp1 <- matLB[1:(nrow(matLB)-1),]-matLB[2:nrow(matLB),]
+temp1 <- abs(temp1)
+temp1 <- apply(temp1, 1, max)
+m.chosenLB <- m.candidatesLB[min(which(temp1==min(temp1)))] 
+  
+  
+temp1 <- matUB[1:(nrow(matUB)-1),]-matUB[2:nrow(matUB),]
+temp1 <- abs(temp1)
+temp1 <- apply(temp1, 1, max)
+m.chosenUB <- m.candidatesUB[min(which(temp1==min(temp1)))] 
+  
+boot.obj <- boot(data = datasamp, statistic= compute_estimators_on_bootstrap_replicate_of_dataset, R=10000, maxBen = maxBen, maxHarm = maxHarm, subsampleSize = m.chosenLB)
+LB.CI_mn <- c(quantile(boot.obj$t[,1], probs = c(.025,0.975)), m.chosenLB)
+##      2.5%      97.5%            
+##0.7096010  0.9245283 96.0000000 
+  
+boot.obj <- boot(data = datasamp, statistic= compute_estimators_on_bootstrap_replicate_of_dataset, R=10000, maxBen = maxBen, maxHarm = maxHarm, subsampleSize = m.chosenUB)
+UB.CI_mn <- c(quantile(boot.obj$t[,2], probs = c(.025,0.975)), m.chosenUB)
+##2.5%      97.5%            
+##  0.9047619  1.0000000 96.0000000

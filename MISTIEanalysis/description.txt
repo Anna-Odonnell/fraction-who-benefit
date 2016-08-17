@@ -1,7 +1,9 @@
 The code in this folder is for the MISTIE Application section.
 
-mRS30.R and mRS180.R are for 30-day mRS score and 180-day mRS score, respectively. In these files, the bound estimates are computed and the marginal distributions (with and without stratifying by the baseline variable) are plotted. 
+mRS30.R and mRS30_mofn are for the outcome 30-day mRS score. In mRS30.R, the bound estimates are computed and the marginal distributions of 30-day mRS under control and treatment (with and without stratifying by the baseline variable) are plotted. In mRS30_mofn, we compute the 95% CI for the lower bound and the 95% CI for the upper bound, when the outcome is 30-day mRS (no restrictions, no baseline variable case) using m-out-of-n bootstrap.
 
-RICV_bounds.R and RICV_margDist.R are for reduction in clot volume (RICV). In RICV_bounds.R, we compute the bound estimates for RICV2, RICV5, RICV10, and RICV20. In RICV_margDist.R, we plot the marginal distributions (with and without stratifying by the baseline variable) for RICV2, RICV5, RICV10, and RICV20.
+mRS180.R and mRS180_mofn.R are for the outcome 180-day mRS score. Their contents are analogous to mRS30.R and mRS30_mofn.R.
 
-In the Excel file, the bound estimates are plotted for the different outcomes.
+RICV_bounds.R, RICV_margDist.R, RICV_mofn are for reduction in clot volume (RICV). In RICV_bounds.R, we compute the bound estimates for each of RICV2, RICV5, RICV10, and RICV20. In RICV_margDist.R, we plot the marginal distributions under treatment and control (with and without stratifying by the baseline variable) for RICV2, RICV5, RICV10, and RICV20. In RICV_mofn.R, we compute the 95% CI for the lower bound and the 95% CI for the upper bound, when the outcome is RICV5 (no restrictions, no baseline variable case) using m-out-of-n bootstrap.
+
+In the Excel file, we plot the bound estimates for the different outcomes.
