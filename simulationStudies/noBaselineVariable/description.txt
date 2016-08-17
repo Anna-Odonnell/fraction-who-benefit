@@ -1,0 +1,5 @@
+The content in this folder is for the simulation studies (without baseline variable) described in Section 6.
+
+The CI_mofn and CI_nbootstrap subfolders include the R code for implementing the simulations. The results are saved as .Rdata files in these subfolders. 
+
+The allResults subfolder has all of the results in one place. The code Table1.R for making Table 1 of the paper is also here. In addition, the file pluginEstimator_binaryNoHarm.R computes the bias and standard error of the plug-in estimator in the binary (no harm) case.

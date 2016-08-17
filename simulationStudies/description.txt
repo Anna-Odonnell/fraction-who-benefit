@@ -1,5 +1,0 @@
-The content in this folder corresponds to Section 6 of the paper.
-
-The CI_mofn and CI_nbootstrap subfolders include the R code for implementing the procedures described in Section 6. The results are saved as .Rdata files in these subfolders. 
-
-The allResults subfolder has all of the results in one place. The code for making Table 1 is also in this subfolder.
