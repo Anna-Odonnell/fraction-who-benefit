@@ -1,0 +1,13 @@
+##Since the MISTIE II data is not publicly available, we simulate a dataset and
+do a similar analysis as we did for MISTIE II using the simulated dataset. The
+simulated dataset is provided in this folder, so that readers can run the analysis
+themselves. Results of the analysis are provided in Appendix O of the Supplementary
+Materials. 
+
+
+
+##In generateDataset.R, we generate the simulated dataset and save it as
+“simulatedDataset.Rdata”.
+##The simulated dataset is then analyzed in “analyzeDataset.R”. The analysis
+includes computing bound estimates and constructing m-out-of-n CI’s for the
+bound parameters using the simulated dataset.
