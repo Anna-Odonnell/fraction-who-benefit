@@ -1,0 +1,6 @@
+The code in this folder corresponds to the non-regular discussion in Section 4.3 of our paper. We give a setting where the estimator is non-regular. Non-regularity in this setting is proved in the Supplementary Materials for our paper. In addition, simulations are conducted to confirm the results. 
+
+The code for the simulations is in the files entitled P0.R and Pn.R. The output of P0.R is distributions_P0.Rdata. The output of Pn.R is distributions_Pn.Rdata. 
+
+We generate plots of the results using the code nonregularPlot_SuppMat.R. The plots are printed in the pdf file nonregularPlot_SuppMat.pdf, and they can also be found in the Supplementary Materials corresponding to our paper.
+
