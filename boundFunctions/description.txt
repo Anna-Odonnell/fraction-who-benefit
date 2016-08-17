@@ -17,11 +17,7 @@ The outputs are as follows:
 ##ub is the upper bound estimate
 ##eps is the epsilon relaxation term
 
-#############################################################################
 
-
-
-#############################################################################
 ##boundsCov_res estimates the lower and upper bounds that incorporate a baseline variable having two possible values (x1 and x2), and that may incorporate support restrictions applying to the entire population.
 
 The inputs are as follows:
@@ -41,3 +37,11 @@ The outputs are as follows:
 ##x1 is the vector including the lower bound estimate, upper bound estimate, and epsilon relaxation term for Subpopulation 1 (in that order).
 ##x2 is the vector including the lower bound estimate, upper bound estimate, and epsilon relaxation term for Subpopulation 2 (in that order).
 #############################################################################
+
+
+
+
+
+The mOfn.R code includes two functions that are used to construct a CI for
+a bound parameter using m-out-of-n bootstrap. The use of these functions is 
+demonstrated in the “analyzeDataset.R” file in the “demo” folder.

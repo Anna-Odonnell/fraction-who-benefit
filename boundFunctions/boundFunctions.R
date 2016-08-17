@@ -8,7 +8,7 @@ boundsNoCov_res <- function(ordinalScale, YT, YC, maxBen, maxHarm){
   nC <- length(YC) #number of control subjects
   
   if(nT == 0 | nC == 0){
-    stop("WARNING: YT or YC is empty")
+    stop("ERROR: YT or YC is empty")
     return(c(NA,NA,NA))
   } else {
     ordinalScale <- sort(ordinalScale, decreasing = FALSE)
