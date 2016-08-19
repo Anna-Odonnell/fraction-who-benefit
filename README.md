@@ -1,1 +1,3 @@
 # fraction-who-benefit
+
+In the "boundFunctions" folder, we provide R functions for computing the bound estimates using our proposed estimator in Section 4.2 of the paper. We also provide functions to construct CI's for the bound parameters using m-out-of-n bootstrap. The use of these functions is demonstrated using a simulated data set in the "demo" folder. In the "MISTIEanalysis" folder, we provide code to reproduce our analysis of the MISTIE II randomized trial data set (Section 5 of the paper) using our method. In the "simulationStudies" folder, we provide code for reproducing our simulation studies (Section 6 of the paper). In the "nonregular" folder, we have simulations which illustrate that our proposed estimator can be non-regular.
